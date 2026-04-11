@@ -1,0 +1,10 @@
+title: "Modular Cluster for AI Research"
+description: "Master thesis — A Modular Cluster for AI Research in Resource-Constrained Academic Environments"
+author: "Bc. Filip Sršeň"
+theme: minima
+baseurl: "/dp-text"
+url: "https://filipsrsen.github.io"
+
+header_pages:
+  - goals.md
+  - timeline.md
