@@ -25,3 +25,5 @@ Key aspects of the project include:
 - **Reproducibility** — infrastructure-as-code approach to ensure consistent environments
 
 The thesis covers the full pipeline from architectural design and software implementation to evaluation of the cluster's performance on representative AI workloads.
+
+[**Download the latest thesis PDF**](https://github.com/FiiL123/dp-text/raw/main/main.pdf)
