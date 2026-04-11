@@ -1,0 +1,4 @@
+sample/
+main*
+!main.tex
+!main.pdf
