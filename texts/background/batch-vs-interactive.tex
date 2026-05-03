@@ -1,3 +1,13 @@
-\section{Batch vs. Interactive Computing}
+\section{Batch vs.\ Interactive Computing}
 
 The challenge of scheduling high-throughput AI jobs alongside interactive researcher notebooks.
+
+\subsection{Common use-cases}
+
+Through user interviews with students experienced with the current solution, several common use cases were identified:
+
+\begin{enumerate}
+    \item \textbf{Script-based batch execution.} Accessing the servers via SSH, copying scripts and datasets onto the machine(s), and running the scripts directly.
+    \item \textbf{Third-party experiment management.} Accessing the servers via SSH, running third-party daemons on the servers, and managing experiments from a web interface. This allows users to run distributed scripts, optimize hyper-parameters of the models, and provides useful metrics about the training process.
+    \item \textbf{Remote development environment.} Using the servers as remote development environments. Users SSH onto the servers and work on their research remotely. This centralization is important for them as they can use thin clients, and if they need to run any quick GPU-heavy calculations to validate their work, there is no need to move to another machine.
+\end{enumerate}

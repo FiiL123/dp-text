@@ -1,2 +1,27 @@
 \section{State of the Art}
-Review of existing frameworks (e.g., Kubeflow) and identifying the "gap" (e.g., complexity, lack of modularity for specialized academic clusters).
+
+Review of existing frameworks (e.g., Kubeflow) and identifying the gap (e.g., complexity, lack of modularity for specialized academic clusters).
+
+\subsection{Technologies in academic practice}
+
+There is a common trend of using Python for the majority of development in AI research. Many users work with common machine learning frameworks such as TensorFlow or PyTorch.
+
+Some users develop their scripts as Jupyter notebooks. Some convert them into pure Python scripts and run them on the machines. Those who use servers as remote development machines run the notebooks directly.
+
+Users also require metrics from their experiments, whether produced by the ML frameworks themselves or by an ML platform such as Weights \& Biases.
+
+\subsection{Hardware requirements}
+
+\subsubsection{Computation}
+
+Almost all users use the machines to train machine learning models. This usually requires GPUs to accelerate the process. Users also want to utilize multiple GPUs to further speed up the process.
+
+Some users --- namely those that work with tabular data --- want to run ETL pipelines on the data. This is normally a CPU- and memory-heavy task.
+
+\subsubsection{Data storage}
+
+A significant portion of research is done in computer vision. This use-case is the most resource-intensive, as image or video datasets can reach hundreds of gigabytes depending on the project.
+
+More standard machine learning projects require far less data storage --- in the range of megabytes to several gigabytes.
+
+There are also users who work with many small files, which can be quite IOps-intensive.
