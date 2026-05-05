@@ -2,13 +2,21 @@
 
 Review of existing frameworks (e.g., Kubeflow) and identifying the gap (e.g., complexity, lack of modularity for specialized academic clusters).
 
+\todo{Rewrite this introductory paragraph --- the old placeholder text is mixed with the new content. Provide a proper introduction that outlines what the SoTA review covers and its structure.}
+
 \subsection{Technologies in academic practice}
 
 There is a common trend of using Python for the majority of development in AI research. Many users work with common machine learning frameworks such as TensorFlow or PyTorch.
 
+\todo{Cite adoption statistics for Python/PyTorch/TensorFlow in ML research (e.g., Stack Overflow survey, Papers with Code statistics).}
+
 Some users develop their scripts as Jupyter notebooks. Some convert them into pure Python scripts and run them on the machines. Those who use servers as remote development machines run the notebooks directly.
 
 Users also require metrics from their experiments, whether produced by the ML frameworks themselves or by an ML platform such as Weights \& Biases.
+
+\todo{Expand with a brief discussion of experiment management platforms --- W\&B, MLflow, Neptune --- and their relevance to the platform design.}
+
+\todo{Add a subsection reviewing existing ML platform frameworks (Kubeflow, Polyaxon, Determined AI, Ray) and identifying their gaps for small academic clusters. This is the core of the SoTA section and is currently missing. Include a comparison table of features relevant to academic use-cases.}
 
 \subsection{Hardware requirements}
 
@@ -16,12 +24,18 @@ Users also require metrics from their experiments, whether produced by the ML fr
 
 Almost all users use the machines to train machine learning models. This usually requires GPUs to accelerate the process. Users also want to utilize multiple GPUs to further speed up the process.
 
+\todo{Cite or reference distributed training paradigms (data parallelism, model parallelism) as motivation for multi-GPU support.}
+
 Some users --- namely those that work with tabular data --- want to run ETL pipelines on the data. This is normally a CPU- and memory-heavy task.
 
 \subsubsection{Data storage}
 
 A significant portion of research is done in computer vision. This use-case is the most resource-intensive, as image or video datasets can reach hundreds of gigabytes depending on the project.
 
+\todo{Add approximate dataset sizes observed in interviews to ground these claims.}
+
 More standard machine learning projects require far less data storage --- in the range of megabytes to several gigabytes.
 
 There are also users who work with many small files, which can be quite IOps-intensive.
+
+\todo{Expand the SoTA section significantly: review Kubeflow, Volcano, Kube-Ray, and at least 2--3 competing platforms with citations. Include a comparison table of features relevant to academic use-cases. This section is the backbone for justifying the design choices.}

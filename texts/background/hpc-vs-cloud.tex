@@ -6,6 +6,8 @@ A central design decision for any compute cluster is the choice of workload mana
 
 Slurm is the de facto standard workload manager in academic and institutional HPC environments. It provides a mature, battle-tested scheduling engine designed for high-throughput batch processing on large clusters.
 
+\todo{Add a citation for Slurm --- e.g., the original Slurm paper (Yoo et al., 2003) or SchedMD documentation. Also cite adoption statistics (e.g., TOP500 survey).}
+
 \subsubsection{Strengths}
 
 \begin{itemize}
@@ -13,14 +15,22 @@ Slurm is the de facto standard workload manager in academic and institutional HP
     \item \textbf{Efficient resource allocation.} Slurm's job-level resource model (CPU cores, memory, GPUs as discrete allocatable units) is well-suited for tightly-coupled parallel workloads such as MPI jobs, simulations, and large-scale batch processing.
     \item \textbf{Mature ecosystem.} Decades of development have produced a rich toolchain: advanced reservation systems, array jobs, job dependencies, detailed accounting, and extensive administrative tooling.
     \item \textbf{Proven at scale.} Slurm reliably manages clusters ranging from tens to hundreds of thousands of nodes in production environments worldwide.
+
+\todo{Cite the original Slurm paper or a survey of HPC scheduler adoption to back these claims.}
 \end{itemize}
 
 \subsubsection{Limitations}
 
 \begin{itemize}
     \item \textbf{Environment rigidity.} Slurm assumes a shared file system and a uniform software environment across nodes. Users typically rely on environment modules or manual Conda setups, which are not portable across clusters and can lead to version conflicts.
+
+\todo{Cite a source on reproducibility challenges in HPC environments (e.g., a Singularity/Apptainer paper or an HPC reproducibility study).}
     \item \textbf{Limited support for interactive workloads.} While Slurm can allocate interactive sessions, its design is fundamentally batch-oriented. Long-running interactive services such as Jupyter notebooks, experiment tracking dashboards, or web-based development environments do not fit naturally into the job scheduling model.
+
+\todo{Cite work on interactive HPC or Jupyter-on-Slurm approaches to strengthen this claim.}
     \item \textbf{No native container orchestration.} Slurm can launch containers (e.g., via Singularity/Apptainer), but it does not manage container lifecycles, networking, or service discovery. Containerized services must be managed externally.
+
+\todo{Cite the Singularity/Apptainer paper since it is mentioned by name.}
     \item \textbf{Monolithic scheduling model.} Slurm's scheduler treats jobs as opaque resource requests. It has no awareness of application-level semantics such as distributed training topology, gang-scheduling requirements, or service dependencies.
 \end{itemize}
 
@@ -28,23 +38,37 @@ Slurm is the de facto standard workload manager in academic and institutional HP
 
 Kubernetes is a container orchestration platform originally developed for microservice workloads, but increasingly adopted for AI/ML and batch processing through extensions such as Volcano and Kubeflow.
 
+\todo{Cite Kubeflow and Volcano project papers or official documentation here.}
+
 \subsubsection{Strengths}
 
 \begin{itemize}
     \item \textbf{Container-native environment management.} Every workload runs in an isolated, reproducible container image. Dependencies, libraries, and runtime versions are bundled with the application, eliminating environment conflicts and enabling portability.
+
+\todo{Back the reproducibility claim with a citation (e.g., a study on container-based reproducibility in scientific computing).}
     \item \textbf{Service-oriented architecture.} Kubernetes natively supports long-running services (JupyterHub, MLflow, Weights \& Biases, dashboards) alongside batch workloads, providing a unified platform for both interactive and non-interactive use.
     \item \textbf{Declarative infrastructure.} Cluster state is defined declaratively through manifests and managed via GitOps workflows, enabling reproducible deployments, version-controlled configuration, and easy cluster reconstruction.
     \item \textbf{Rich ecosystem for ML.} Specialized frameworks such as Kubeflow, Volcano (batch scheduling), Kube-Ray (distributed compute), and MLflow integration provide purpose-built tooling for AI/ML workflows including distributed training, hyperparameter tuning, and experiment tracking.
+
+\todo{Cite Kube-Ray, Kubeflow, and Volcano individually rather than listing them without references.}
     \item \textbf{Extensibility.} Kubernetes' operator pattern and custom resource definitions (CRDs) allow the platform to be extended with domain-specific scheduling semantics without modifying the core system.
+
+\todo{Cite the Kubernetes operator pattern paper or official documentation.}
 \end{itemize}
 
 \subsubsection{Limitations}
 
 \begin{itemize}
     \item \textbf{Operational complexity.} Kubernetes has a steep learning curve and significant operational overhead. Cluster management requires expertise in networking, storage, security, and container registries.
+
+\todo{Cite a study or blog post quantifying Kubernetes operational complexity.}
     \item \textbf{Resource overhead.} The control plane (API server, etcd, scheduler, controller manager) consumes resources that may be significant on small clusters, leaving less headroom for compute workloads.
+
+\todo{Quantify the control plane resource overhead (e.g., typical memory/CPU footprint of API server + etcd on a small cluster).}
     \item \textbf{Weaker fair-share scheduling by default.} Kubernetes' default scheduler lacks the sophisticated fair-share and priority-decay policies that Slurm provides out of the box. These must be added through extensions such as Volcano.
     \item \textbf{Less mature for tightly-coupled parallel jobs.} Kubernetes is not traditionally designed for MPI-style tightly-coupled parallelism. While support exists (e.g., through MPI operators), it is less mature than Slurm's native MPI integration.
+
+\todo{Cite the MPI Operator project or Kubeflow MPI documentation.}
 \end{itemize}
 
 \subsection{Comparison summary}
@@ -52,3 +76,5 @@ Kubernetes is a container orchestration platform originally developed for micros
 Neither paradigm is universally superior --- the choice depends on workload characteristics and operational requirements. Slurm excels in environments dominated by traditional batch HPC workloads with homogeneous software stacks. Kubernetes excels where workloads are diverse (batch + interactive + services), environments need to be reproducible and portable, and the research community benefits from modern ML tooling.
 
 For AI/ML research environments specifically, the container-native model offers compelling advantages: reproducible environments, native support for interactive development tools, and a growing ecosystem of ML-specific orchestration frameworks. These benefits must be weighed against the operational complexity and resource overhead that Kubernetes introduces, particularly in resource-constrained academic settings.
+
+\todo{Add a paragraph explicitly stating which paradigm this thesis chose and why, with a forward-reference to the architecture/design chapter.}

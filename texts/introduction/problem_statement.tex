@@ -15,6 +15,10 @@ Machine learning often requires large datasets that need to be present for train
 
 Users manage their environments, packages, and libraries through Conda. As with data, however, these environments are not shared across the machines. This means that whenever users want to switch machines they need to take their Conda environments with them. The result is that the same packages are installed multiple times across the machines, increasing file system utilization further.
 
+\todo{Quantify the storage waste if possible --- e.g., typical Conda environment size multiplied by number of duplicate installations observed across machines.}
+
 \subsection{Scheduling}
 
 Whenever users want to use the machines for compute they are supposed to post into a Teams channel. The post should contain information about their job --- mainly the length of the computation and the machine(s) they are selecting. Many times, however, the time estimate is inaccurate, or even worse --- users do not post about their job in the channel and just start using the machines. This results in users needing to check each machine individually to confirm whether it is available. There is no centralized monitoring solution, so users manually connect to each node and check its utilization.
+
+\todo{Add a concluding paragraph that transitions to the contribution/design chapters --- summarise how the three problems (data, environment, scheduling) motivate the three-part contribution (research, design, implementation).}

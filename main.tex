@@ -21,20 +21,26 @@
 \usepackage{amssymb}
 \usepackage{multirow}
 \usepackage{booktabs}
-\usepackage{color}
 \usepackage{setspace}
 \usepackage{tabularx}
 \usepackage{textcomp}
 \usepackage{caption}
 \usepackage{natbib}
-\usepackage{subcaption}
 \usepackage[font=large]{subcaption}
 % \usepackage{emptypage}
 \usepackage{float}
 \usepackage[hidelinks,breaklinks]{hyperref}
 \usepackage{minted}
 \usepackage[thinlines]{easytable}
-\usepackage{amsmath}
+\usepackage{xcolor}
+
+\newcommand{\todo}[1]{%
+  \par\medskip
+  \noindent\fcolorbox{black}{white}{%
+    \parbox{0.92\textwidth}{\color{red}\textbf{TODO:} #1}%
+  }%
+  \par\medskip
+}
 
 %\captionsetup[subfigure]{font=large}
 
@@ -269,7 +275,7 @@ TODO
 \backmatter
 
 \nocite{*}
-\bibliographystyle{plain}
+\bibliographystyle{plainnat}
 \bibliography{references}
 
 %---koniec bibliografie

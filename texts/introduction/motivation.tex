@@ -2,14 +2,18 @@
 
 The widening gap between industry-scale AI compute and the heterogeneous, resource-constrained environments found in academia.
 
+\todo{Expand the opening into a full paragraph motivating why the compute gap matters for academic AI research. Consider citing evidence of the growing hardware demands of modern ML (e.g., model sizes, training costs).}
+
 \subsection{Computing at our department}
 
-On a global scale, Comenius University is a rather small institution, with our faculty being an even smaller one, let alone our department. The Department of Applied Informatics has around TODO faculty members and around TODO students. Many of these students are actively doing research in machine learning and adjacent fields, thus requiring computational resources that often go beyond their own personal computers.
+On a global scale, Comenius University is a rather small institution, with our faculty being an even smaller one, let alone our department. The Department of Applied Informatics has around \todo{Insert exact number of faculty members.} faculty members and around \todo{Insert exact number of students.} students. Many of these students are actively doing research in machine learning and adjacent fields, thus requiring computational resources that often go beyond their own personal computers.
 
-The department has its own small server cabinet with a handful of computers equipped with consumer-grade hardware. On request, these machines are available to any student who needs them for their work.
+The department has its own small server cabinet with a handful of computers equipped with consumer-grade hardware. \todo{Add specifics about the hardware (GPU models, RAM, storage) --- reference the inventory table from the implementation chapter or an appendix.} On request, these machines are available to any student who needs them for their work.
 
 \subsection{Current state}
 
 Currently there are four machines used for compute. Users are provided access to each machine the department manages based on a request from their supervisors. They are also added to a Teams team, which is used to post updates about the machines. It is also used for ``reserving'' compute slots --- users post to the team when, for how long, and on which machine they are going to be computing. Users then use SSH to connect to the selected nodes, move their data to the node, and run their computations.
 
 However, because the computers are standalone machines with no collective management or shared file system beyond user logins, this setup comes with a number of challenges: environment management, data management, and scheduling. These are discussed in detail in the problem statement.
+
+\todo{Add a transition paragraph connecting the current-state description to the problem statement. Briefly preview the three key challenges (data, environment, scheduling) to improve narrative flow.}

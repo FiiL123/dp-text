@@ -1,3 +1,68 @@
 \section{Cloud-Native Orchestration}
 
-Fundamentals of Kubernetes and container-based workloads.
+This section introduces the foundational concepts behind cloud-native computing and container orchestration that underpin the system designed in this work. We trace the evolution from monolithic deployments through virtualization to modern container-based platforms, with a focus on the technologies and abstractions that enable efficient resource sharing in multi-user environments.
+
+\subsection{Containerization Fundamentals}
+
+Containerization is an operating-system-level virtualization technique that isolates applications and their dependencies into lightweight, portable units called \emph{containers}. Unlike traditional hardware virtualization, which requires a full guest operating system per virtual machine, containers share the host kernel and use Linux kernel primitives---namely \emph{namespaces} for isolation and \emph{cgroups} for resource limiting---to achieve confinement with minimal overhead \citep{sultan2019container}.
+
+The Docker project, released in 2013, popularized container technology by providing a streamlined workflow for building, distributing, and running container images. Docker introduced a layered filesystem model and a declarative image format that encodes the full dependency stack of an application, ensuring reproducibility across environments. This portability addressed a persistent pain point in scientific computing, where researchers frequently struggled to reproduce experiments due to differences in library versions, system packages, and hardware configurations \citep{domingus2022cloud}.
+
+The Open Container Initiative (OCI), established in 2015 under the Linux Foundation, standardized the container image format and runtime specification, decoupling the ecosystem from any single vendor. Today, multiple runtimes (runc, crun, containerd, CRI-O) comply with the OCI specification, and registries serve as universal distribution channels for container images.
+
+For academic computing, containers offer three key advantages over traditional deployment models. First, \emph{reproducibility}: an experiment packaged as a container image produces identical results regardless of the underlying host, eliminating the ``works on my machine'' problem. Second, \emph{isolation}: cgroups and namespaces prevent workloads from interfering with one another, enabling safe multi-tenancy on shared infrastructure. Third, \emph{portability}: the same container image can run on a researcher's laptop, a department server, or a cloud provider without modification.
+
+\todo{Add a figure showing the container architecture (namespaces, cgroups, layered filesystem) or a comparison diagram VM vs.\ container.}
+
+\subsection{Container Orchestration Platforms}
+
+As container adoption grew beyond single-host deployments, the need for automated management of container lifecycles across clusters of machines became apparent. Container orchestration platforms address this need by providing centralized control over deployment, scaling, networking, and fault tolerance of containerized workloads.
+
+Google's internal cluster management systems, Borg and Omega, pioneered many of the concepts that underpin modern orchestration \citep{verma2015borg}. Borg, in production at Google since 2003, runs hundreds of thousands of jobs from many thousands of applications across clusters of up to tens of thousands of machines each. It introduced the notions of declarative job specifications, automated placement based on resource constraints, and self-healing through continuous reconciliation of desired and actual state. Omega extended these ideas with a more modular architecture based on a shared-state scheduling model.
+
+\citet{burns2016borg} describe the evolution from Borg through Omega to Kubernetes, an open-source system released by Google in 2014 that has since become the de facto standard for container orchestration. Kubernetes retains Borg's core design principles---declarative configuration, a reconciliation loop, and label-based object selection---while introducing a more extensible API-driven architecture.
+
+The key Kubernetes abstractions relevant to this work include:
+
+\begin{itemize}
+  \item \textbf{Pods}, the smallest deployable units, which encapsulate one or more containers sharing network and storage resources on a single node.
+  \item \textbf{Deployments} and \textbf{StatefulSets}, which manage replica sets of Pods with different guarantees regarding ordering, persistence, and identity.
+  \item \textbf{Services}, which provide stable network endpoints for dynamically placed Pods through label selectors.
+  \item \textbf{Custom Resource Definitions (CRDs)}, which extend the Kubernetes API with domain-specific objects, enabling the platform to manage workloads beyond traditional microservices \citep{salatino2024platform}.
+\end{itemize}
+
+The Kubernetes control plane consists of several cooperating components: the \emph{API server} exposes the cluster state via a RESTful interface; the \emph{etcd} distributed store persists this state; the \emph{controller manager} reconciles current state with desired state through a collection of control loops; and the \emph{kubelet} agent on each worker node ensures that the containers assigned to it remain running and healthy. This architecture enables both human operators and automated systems to interact with the cluster uniformly through the API.
+
+\todo{Add a diagram of the Kubernetes control plane architecture (API server, etcd, controller manager, scheduler, kubelet, kube-proxy).}
+
+\subsection{Kubernetes Scheduling and Resource Management}
+
+The Kubernetes scheduler is responsible for placing Pods onto nodes that satisfy their resource and constraint requirements. The default scheduler operates in two phases: \emph{filtering}, which eliminates nodes that do not meet hard constraints (resource capacity, node selectors, taints and tolerations), and \emph{scoring}, which ranks the remaining nodes using configurable priority functions \citep{hightower2019kubernetes}.
+
+Each container in a Pod specifies \emph{resource requests} (the minimum guaranteed amount) and \emph{limits} (the maximum consumable amount) for CPU and memory. The scheduler uses requests during placement to avoid overcommitting nodes, while limits enforce hard boundaries at runtime via cgroups. Based on the relationship between requests and limits, Kubernetes assigns one of three Quality of Service (QoS) classes to each Pod: \emph{Guaranteed} (requests equal limits), \emph{Burstable} (requests less than limits), and \emph{BestEffort} (no requests or limits specified). Under resource pressure, the kernel's OOM killer preferentially evicts BestEffort and then Burstable Pods, protecting Guaranteed workloads \citep{senjab2023survey}.
+
+For elastic scaling, Kubernetes provides the Horizontal Pod Autoscaler (HPA), which automatically adjusts the number of Pod replicas based on observed metrics such as CPU utilization or custom application metrics \citep{nguyen2020hpa}. The Vertical Pod Autoscaler (VPA) complements HPA by adjusting individual container resource requests, and the Cluster Autoscaler dynamically adds or removes nodes to match aggregate resource demand.
+
+\todo{Add a table summarizing resource requests vs.\ limits and their QoS class implications with concrete examples (CPU/memory values).}
+
+The default scheduler is designed for long-running services with relatively homogeneous resource requirements. Batch, scientific, and AI training workloads, however, present distinct scheduling challenges: gang scheduling (all-or-nothing placement of co-dependent tasks), fair sharing among users, preemption of lower-priority jobs, and efficient GPU allocation. To address these needs, the Kubernetes scheduling framework was extended with a plugin architecture that allows custom scheduling logic to be injected at well-defined extension points \citep{misale2022standard}. Projects such as Volcano, Yunikorn, and Kube-Ray leverage this extensibility to provide batch and AI-aware scheduling policies, a topic explored further in Section~\ref{sec:batch-vs-interactive}.
+
+\todo{Expand on Volcano's gang scheduling and queue management in more detail---this is directly used in the implementation (see orchestration.tex). Reference Volcano-specific literature or docs.}
+
+\subsection{Cloud-Native in Academic and HPC Environments}
+
+Traditional high-performance computing (HPC) centers have long relied on batch scheduling systems such as SLURM \citep{yoo2003slurm}, PBS, or LSF to manage resource allocation. These systems excel at scheduling tightly-coupled parallel jobs on dedicated nodes with strict fairness policies, but they lack native support for the container lifecycle management, service discovery, and declarative APIs that characterize the cloud-native paradigm.
+
+Conversely, Kubernetes was originally designed for stateless microservices and web applications, not for the high-throughput, multi-tenant GPU workloads common in academic research. This mismatch creates a gap that several recent efforts have sought to bridge from both directions.
+
+\citet{spisakova2023kubernetes} identify the key problems encountered when deploying Kubernetes in an academic environment, including limited GPU sharing, the absence of fair-share scheduling, and difficulties in providing interactive access alongside batch jobs. Their work proposes approaches for adapting Kubernetes abstractions to academic workflows while preserving the flexibility and reproducibility benefits of containers.
+
+From the HPC side, \citet{chazapis2023kubernetes} explore running unmodified Kubernetes workloads directly on HPC clusters, proposing a design that integrates with the existing job management system rather than replacing it. This avoids partitioning the cluster into separate cloud and HPC partitions and retains established accounting and scheduling policies. The Slinky project \citep{wickberg2025slinky} takes the complementary approach of embedding SLURM's scheduling capabilities within Kubernetes, providing familiar HPC job submission semantics on top of a cloud-native infrastructure.
+
+\citet{misale2022standard} propose standard scheduling interfaces for converged computing, arguing that the Kubernetes scheduling framework's plugin architecture can serve as a unifying layer for both cloud-native and HPC workloads. Their work demonstrates how batch scheduling semantics---such as gang scheduling, queue management, and job preemption---can be implemented as Kubernetes scheduler plugins without modifying the core control plane.
+
+\todo{Add a comparison table: SLURM vs.\ Kubernetes feature matrix (scheduling model, container support, GPU management, fair-share, API style, multi-tenancy). This table would help motivate the design choices in the architecture chapter.}
+
+These convergence efforts are directly relevant to this thesis. The modular cluster designed in this work must serve both interactive research sessions (notebooks, development environments) and long-running batch jobs (model training, hyperparameter sweeps), a duality that requires drawing on techniques from both the cloud-native and HPC traditions. The platform engineering approach of extending Kubernetes through CRDs and custom controllers, rather than modifying core components, provides the architectural foundation for this integration \citep{salatino2024platform, domingus2022cloud}.
+
+\todo{Tie the concluding paragraph more explicitly to the specific design decisions made in this thesis---reference the architecture chapter (e.g.\ Volcano integration, Kube-Ray for distributed training) once those sections are written.}
