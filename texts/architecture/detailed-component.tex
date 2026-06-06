@@ -4,6 +4,14 @@
 
 Keycloak integration for multi-tenancy.
 
+\subsection{Lightweight Control Plane}
+
+The foundation of the architecture is K3s, a lightweight Kubernetes distribution selected for its minimal resource footprint and single-binary deployment model. As detailed in Section~\ref{sec:cloud-native}, K3s provides a fully conformant Kubernetes control plane while consuming a fraction of the resources required by a standard deployment. On a cluster of consumer-grade machines, this efficiency is critical: the control plane (API server, scheduler, controller manager) runs on the same physical nodes as research workloads, and every megabyte of RAM devoted to infrastructure reduces the resources available for GPU-accelerated training.
+
+K3s replaces the standard etcd cluster with SQLite as the default embedded datastore for single-server deployments, with options for external databases (PostgreSQL, MySQL, or etcd) for high-availability configurations. For the target environment, a small cluster of four to eight nodes, a single-server deployment with automated backups provides sufficient reliability without the operational complexity of a multi-node etcd quorum.
+
+The deployment lifecycle is managed through a CI/CD pipeline: all cluster configuration, Helm chart values, namespace definitions, and Volcano queue policies is stored in a version-controlled repository. GitHub Actions automates the linting, templating, and application of Helm releases on each push to the main branch. This approach supports the single-administrator operability objective by making all configuration changes auditable, reproducible, and reversible. An administrator can reconstruct the platform from bare metal by running the Ansible playbooks to bootstrap K3s, then pushing the Helm configuration repository to trigger the deployment pipeline in a process that requires no manual intervention beyond the initial node provisioning.
+
 \subsection{Research Interface and Environment Provisioning}
 
 JupyterHub and Harbor (private registry).
@@ -12,7 +20,7 @@ JupyterHub and Harbor (private registry).
 
 \subsubsection{Volcano}
 
-Batch scheduling and gang-scheduling for AI workloads.
+Batch scheduling and gang-scheduling for AI workloads. As described in Section~\ref{sec:resource-constrained}, Volcano's queue management and priority mechanisms are specifically leveraged to compensate for the absence of hardware-level GPU partitioning on consumer-grade cards. By providing software-enforced fair sharing, gang scheduling for distributed jobs, and priority-based preemption, Volcano enables multi-tenant GPU sharing on hardware that would otherwise support only exclusive, single-user allocation.
 
 \subsubsection{Kube-Ray}
 

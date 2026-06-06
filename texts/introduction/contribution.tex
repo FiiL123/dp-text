@@ -1,6 +1,6 @@
 \section{Thesis Contributions}
 
-This work has three main goals: research, design, and implementation.
+This work has three main goals: research, design, and implementation. Together, they address the infrastructure sprawl problem identified in the motivation: small academic departments need a \emph{single}, unified platform that is both feature-rich enough to support modern AI/ML workflows and lightweight enough to be operated by a single administrator on consumer-grade hardware.
 
 \subsection{Research}
 
@@ -15,17 +15,19 @@ The design goal is to design solutions that support the identified use-cases. Th
     \item be able to exist within the existing infrastructure,
     \item be easily scalable,
     \item provide additional services,
-    \item support modern AI/ML practices.
+    \item support modern AI/ML practices,
+    \item be maintainable long-term by a \textbf{single administrator}, thereby minimizing the total cost of ownership,
+    \item \textbf{consolidate batch and interactive workloads} onto a single control plane, eliminating the need for separate HPC and cloud-native stacks,
+    \item operate efficiently on \textbf{consumer-grade hardware} without relying on enterprise features such as NVIDIA MIG for GPU partitioning, InfiniBand for high-speed interconnects, or ECC memory.
 \end{itemize}
 
 \subsection{Implementation}
 
-After providing solutions that address users' needs, the goal is to select a solution and implement it. \todo{Briefly state or forward-reference the selection criteria used to choose the final design (e.g., compatibility with existing infrastructure, scalability, operational overhead).} Specifically, this thesis contributes:
+After providing solutions that address users' needs, the goal is to select a solution and implement it. Specifically, this thesis contributes:
 
 \begin{itemize}
     \item A modular, Kubernetes-native platform for AI research.
     \item An intelligent scheduling layer for resource-efficient batch processing.
     \item A distributed executor for scaling research workloads.
+    \item A converged, lightweight control plane, built on K3s, that unifies batch scheduling, interactive development environments, and experiment tracking with minimal operational overhead, designed to be managed by a single administrator on consumer-grade hardware.
 \end{itemize}
-
-\todo{Consider adding a brief closing paragraph that maps each contribution to the thesis structure (Chapter X covers research, Chapter Y covers design, etc.).}

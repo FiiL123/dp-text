@@ -1,9 +1,38 @@
 \section{Design for Resource Constraint Mitigation}
+\label{sec:resource-constrained}
+
+A defining characteristic of the target environment is that all compute nodes are built from consumer-grade hardware. While this keeps procurement costs low, an essential requirement for small academic departments. It introduces a set of constraints that enterprise data center infrastructure is designed to avoid. This section details these constraints and describes the architectural strategies employed to mitigate their impact on system stability, multi-tenancy, and overall research productivity.
+
+\subsection{Consumer-Grade Hardware Constraints}
+
+The department's compute nodes are equipped with a heterogeneous mix of NVIDIA GPUs spanning several generations, with VRAM capacities ranging from 12\,GB to 24\,GB. This hardware profile imposes three categories of constraints that the architecture must address.
+
+\paragraph{No hardware-level GPU partitioning.} Enterprise GPUs such as the NVIDIA A100 and H100 support Multi-Instance GPU (MIG), which allows a single physical GPU to be partitioned into multiple isolated instances with independent memory and compute units. Consumer-grade GPUs (GeForce and Titan series) do not support MIG. This means that the architecture cannot rely on hardware-enforced isolation between GPU workloads belonging to different users. Instead, isolation must be achieved through scheduling policies and software-level resource quotas.
+
+\paragraph{Limited and heterogeneous VRAM.} The available VRAM per GPU ranges from 12\,GB to 24\,GB, significantly less than the 40--80\,GB available on current data center GPUs. This limits the maximum model size that can be trained on a single device and increases the risk of out-of-memory errors when multiple users share the same GPU through time-slicing. The heterogeneous VRAM distribution across nodes further complicates workload placement: a training job requiring 20\,GB of GPU memory can only be scheduled on a subset of the cluster's nodes.
+
+\paragraph{No high-speed interconnect.} Enterprise training clusters typically use InfiniBand or RDMA over Converged Ethernet (RoCE) for low-latency, high-bandwidth communication between nodes during distributed training. The department's nodes are connected via standard Ethernet, introducing higher latency and lower bandwidth for inter-node communication. This constraint primarily affects large-scale distributed training workloads, which must be designed with higher communication-to-computation ratios in mind. The absence of InfiniBand also means that shared filesystem performance is limited by the network backbone, affecting data-intensive workloads such as computer vision pipelines.
+
+\paragraph{No ECC memory.} Consumer-grade GPUs and host systems lack Error-Correcting Code (ECC) memory, increasing the risk of silent data corruption during long-running training jobs. While this is a known limitation, its practical impact on typical academic ML workloads (training runs of hours to a few days) is relatively low compared to large-scale, week-long distributed training campaigns. The architecture does not attempt to mitigate this at the infrastructure level, but the use of experiment tracking (MLflow) and checkpointing strategies provides application-level resilience.
 
 \subsection{Advanced Scheduling Strategies}
 
-Volcano queueing and priority mechanisms.
+The absence of hardware-level GPU partitioning on consumer-grade cards means that multi-tenant GPU sharing must be orchestrated entirely in software. The architecture leverages Volcano, a Kubernetes batch scheduling plugin, as the primary mechanism for achieving fair, efficient, and predictable resource allocation.
 
-\subsection{Elasticity and Resource Elasticity}
+\paragraph{Queue-based fair sharing.} Volcano introduces the concept of \emph{queues}, logical partitions of cluster resources with configurable weights, capacities, and priority thresholds. Each user or research group can be assigned a dedicated queue with a guaranteed resource share. When the cluster is underutilized, queues can reclaim idle resources from other queues, ensuring high overall utilization without sacrificing fairness. This provides a software-level analogue to Slurm's fair-share scheduling policies, implemented entirely within the Kubernetes control plane.
 
-K8s/Ray dynamic scaling.
+\paragraph{Gang scheduling.} Distributed training jobs require all participating pods to be scheduled simultaneously; partial placement leads to wasted resources as allocated GPUs sit idle waiting for the remaining pods. Volcano's gang scheduling semantics ensure that a job is either fully placed across the required nodes or not scheduled at all, with resources reserved until the entire gang can be accommodated. This is particularly important on a small cluster where the number of available GPUs is limited and partial allocation can block other jobs.
+
+\paragraph{GPU time-slicing.} On NVIDIA consumer GPUs, the NVIDIA driver supports a software-level time-slicing mechanism that allows multiple processes to share a single GPU by interleaving their execution across configurable time slices. The architecture configures time-slicing at the node level and exposes the resulting shared GPU resources through Kubernetes device plugins. While time-slicing does not provide memory isolation (all processes share the full VRAM address space), it enables concurrent lightweight workloads such as inference endpoints or short validation runs to coexist on the same GPU without requiring exclusive allocation.
+
+\paragraph{Priority and preemption.} Volcano supports hierarchical job priorities with configurable preemption policies. High-priority batch training jobs can preempt lower-priority interactive sessions (or vice versa, depending on the configured policy), ensuring that time-sensitive workloads are not indefinitely blocked by long-running jobs. The preemption strategy is configured to balance research flexibility (allowing interactive exploration) with throughput guarantees (ensuring batch training jobs complete within expected timeframes).
+
+\subsection{Elasticity and Dynamic Resource Management}
+
+The architecture supports dynamic scaling of both batch and interactive workloads through complementary mechanisms.
+
+\paragraph{Ray cluster elasticity.} Kube-Ray, the Kubernetes operator for Ray clusters, supports autoscaling of Ray worker nodes based on the resource demands of submitted tasks. When a distributed training job requires additional compute, Kube-Ray can provision additional Ray workers (subject to available cluster resources) and automatically scale down when the workload completes. This elasticity is bounded by the fixed size of the physical cluster but provides flexible allocation within those limits.
+
+\paragraph{Interactive workload hibernation.} JupyterHub, configured as the primary interactive development environment, supports profile-based resource allocation. User notebooks can be configured with idle timeouts that automatically cull inactive sessions, freeing GPU resources for batch workloads during periods of low interactive demand (e.g., overnight). When a user reconnects, the notebook server is transparently restarted with the same persistent volume, preserving the user's data and environment.
+
+\paragraph{Node-level resource overcommit.} Given the small cluster size and the variable resource demands of ML workloads, the architecture supports controlled resource overcommit for CPU and memory (but not GPU VRAM). Best-effort workloads such as data preprocessing tasks or experiment visualization can be scheduled on nodes that are nominally at capacity, relying on Kubernetes' QoS class enforcement to evict them if higher-priority workloads require the resources. This strategy increases cluster utilization at the cost of occasional preemption, a trade-off that is acceptable in an academic research context where jobs are typically idempotent and can be restarted from checkpoints.

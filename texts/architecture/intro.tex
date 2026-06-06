@@ -2,8 +2,22 @@
 
 \subsection{Design Objectives}
 
-Modularity, Scalability, and Resource Efficiency.
+The architecture is guided by five primary objectives, each addressing a specific aspect of the problem statement and the infrastructure sprawl challenge identified in Chapter~\ref{cha:background-related-work}.
+
+\paragraph{Modularity.} The system must be composed of loosely coupled, independently deployable components. This allows individual services: the scheduler, the notebook platform, the experiment tracker to be upgraded, replaced, or removed without affecting the rest of the stack. Modularity also enables incremental adoption: a department can start with a minimal deployment and add components as needs evolve.
+
+\paragraph{Scalability.} The architecture must accommodate growth from a single-node proof-of-concept to a multi-node cluster without fundamental redesign. This includes both horizontal scaling (adding compute nodes) and vertical scaling (upgrading individual nodes with better GPUs or more RAM).
+
+\paragraph{Resource Efficiency.} Given the limited compute capacity of a small departmental cluster, the system must minimize overhead, both from the control plane itself and from idle or underutilized workloads. Every gigabyte of RAM and every GPU cycle consumed by infrastructure components is unavailable for research.
+
+\paragraph{Single-Administrator Operability.} The entire platform from initial deployment through day-to-day operations, monitoring, upgrades, and incident response must be manageable by a single person, typically a PhD student or lab administrator who splits their time between research, teaching and infrastructure maintenance. This objective shapes every design decision, favoring declarative configuration, automated reconciliation, and a reduced operational surface area. The goal is to minimize the total cost of ownership (TCO) to a level sustainable for a small academic department.
+
+\paragraph{Consumer-Grade Hardware Compatibility.} The architecture must operate effectively on consumer-grade hardware without relying on enterprise data center features. Specifically, the system must function without NVIDIA MIG for hardware-level GPU partitioning, without InfiniBand or RDMA for high-speed inter-node communication, and without ECC memory. The design must instead provide software-level mechanisms: scheduling policies, resource quotas, and isolation boundaries, to compensate for the absence of these features.
 
 \subsection{Design Philosophy}
 
-Cloud-native, microservice-based approach using Kubernetes.
+The design follows a cloud-native, microservice-based approach using Kubernetes as the foundational orchestration layer. Rather than building a monolithic platform, each of the following capabilities is realized as an independent service integrated through the Kubernetes API: identity management, notebook provisioning, batch scheduling, experiment tracking, container registry.
+
+A key architectural decision is the selection of \emph{K3s} as the Kubernetes distribution. As discussed in Section~\ref{sec:cloud-native}, K3s provides a fully conformant Kubernetes control plane with a significantly reduced resource footprint, packaged as a single binary. For a small academic cluster where control-plane resources compete with research workloads for the same physical machines, this efficiency is essential. K3s also simplifies operational procedures such as cluster bootstrapping, upgrades, and backup, which are handled through a unified toolchain, directly supporting the single-administrator operability objective.
+
+The platform is extended through standard Kubernetes mechanisms: CRDs define domain-specific objects (e.g., Ray clusters, Volcano queues), Helm charts package and parameterize deployments, and a CI/CD pipeline (GitHub Actions) ensures that Helm releases are applied consistently and reproducibly on every configuration change. This approach avoids modifying core Kubernetes components, maintaining compatibility with the broader ecosystem while keeping the operational knowledge transferable.
