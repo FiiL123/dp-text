@@ -13,7 +13,15 @@ The Open Container Initiative (OCI), established in 2015 under the Linux Foundat
 
 For academic computing, containers offer three key advantages over traditional deployment models. First, \emph{reproducibility}: an experiment packaged as a container image produces identical results regardless of the underlying host, eliminating the ``works on my machine'' problem. Second, \emph{isolation}: cgroups and namespaces prevent workloads from interfering with one another, enabling safe multi-tenancy on shared infrastructure. Third, \emph{portability}: the same container image can run on a researcher's laptop, a department server, or a cloud provider without modification.
 
-\todo{Add a figure showing the container architecture (namespaces, cgroups, layered filesystem) or a comparison diagram VM vs.\ container.}
+Figure~\ref{fig:vm-vs-container} illustrates the architectural difference between the two approaches: a hypervisor virtualizes physical hardware and runs a full guest operating system in every virtual machine, whereas a container engine shares the host kernel and isolates processes through namespaces and cgroups, eliminating the per-VM operating system overhead \citep{sultan2019container}.
+
+\begin{figure}[!hbt]
+    \begin{center}
+        \includegraphics[width=0.9\textwidth]{images/docker-vm.png}
+        \caption{Comparison of container architectures (a) and virtual machine (b) . Virtual machines each run a full guest operating system on top of a hypervisor, while containers share the host kernel and are isolated by the container engine. Adapted from \citet{sultan2019container}.}
+        \label{fig:vm-vs-container}
+    \end{center}
+\end{figure}
 
 \subsection{Container Orchestration Platforms}
 
